@@ -1,0 +1,202 @@
+package com.rodrigo.gestaofrotaonibus
+
+import java.util.Scanner
+
+// -----------------------------------------------
+// SIMULAÇÃO DE APLICATIVO - GESTÃO DE FROTA
+// Login, menu de serviços, peças em estoque e
+// manutenção preventiva com validações.
+// -----------------------------------------------
+
+data class Veiculo(
+    val prefixo: String,
+    val modelo: String,
+    val placa: String,
+    var km: Int
+)
+
+data class Peca(
+    val nome: String,
+    var quantidade: Int
+)
+
+// Peças em estoque
+val pecas = mutableListOf(
+    Peca(nome = "Embreagem",   quantidade = 5),
+    Peca(nome = "Amortecedor", quantidade = 8),
+    Peca(nome = "Disco",       quantidade = 10),
+    Peca(nome = "Bateria",     quantidade = 4)
+)
+
+// Veículos cadastrados
+val veiculos = listOf(
+    Veiculo(
+        prefixo = "36010",
+        modelo = "Marcopolo Viaggio 1050",
+        placa  = "ROD1E26",
+        km     = 120000
+    ),
+    Veiculo(
+        prefixo = "36012",
+        modelo = "Caio Apache Vip 5",
+        placa  = "UED5OP",
+        km     = 90000
+    )
+)
+
+fun main() {
+    val input = Scanner(System.in)
+
+    println("===== GESTÃO DE FROTA - SIMULAÇÃO DO APLICATIVO =====")
+    println("Login do usuário:")
+
+    print("Usuário: ")
+    val usuario = input.nextLine()
+
+    print("Senha: ")
+    val senha = input.nextLine()
+
+    println("\nLogin realizado com sucesso para o usuário: $usuario\n")
+
+    // Loop principal: menu de seleção de serviço
+    while (true) {
+        println("===== SELECIONAR SERVIÇO =====")
+        println("1 - Visualizar peças em estoque")
+        println("2 - Manutenção preventiva do veículo")
+        println("0 - Sair")
+        print("Opção: ")
+
+        val opcao = input.nextLine()
+
+        when (opcao) {
+            "1" -> visualizarPecas(input)
+            "2" -> manutencaoPreventiva(input)
+            "0" -> {
+                println("\nSistema encerrado.")
+                return
+            }
+            else -> {
+                println("\nOpção inválida, tente novamente.\n")
+            }
+        }
+    }
+}
+
+// -------------------------
+// Opção 1: Peças em estoque
+// -------------------------
+fun visualizarPecas(input: Scanner) {
+    println("\n===== PEÇAS EM ESTOQUE =====")
+    pecas.forEachIndexed { index, peca ->
+        println("${index + 1} - ${peca.nome}: ${peca.quantidade} unidade(s)")
+    }
+    println("\nDigite qualquer tecla para voltar ao menu de seleção de serviço...")
+    input.nextLine()
+    println()
+}
+
+// --------------------------------------
+// Opção 2: Manutenção preventiva veículo
+// --------------------------------------
+fun manutencaoPreventiva(input: Scanner) {
+    println("\n===== MANUTENÇÃO PREVENTIVA =====")
+
+    // 1) Escolher veículo pelo prefixo, com validação
+    val veiculoSelecionado: Veiculo = selecionarVeiculoPorPrefixo(input)
+
+    // 2) Exibir dados do veículo encontrado
+    println("\nVeículo encontrado:")
+    println("Prefixo: ${veiculoSelecionado.prefixo}")
+    println("Modelo : ${veiculoSelecionado.modelo}")
+    println("Placa  : ${veiculoSelecionado.placa}")
+    println("KM     : ${veiculoSelecionado.km} km\n")
+
+    // 3) Selecionar peça para troca, com validação
+    val pecaSelecionada: Peca = selecionarPecaParaTroca(input)
+
+    // 4) Resumo da operação
+    println("\n===== RESUMO DA MANUTENÇÃO =====")
+    println("Manutenção preventiva")
+    println("Peça    : ${pecaSelecionada.nome}")
+    println("Prefixo : ${veiculoSelecionado.prefixo}")
+    println("Placa   : ${veiculoSelecionado.placa}")
+    println("Modelo  : ${veiculoSelecionado.modelo}")
+    println("KM      : ${veiculoSelecionado.km} km")
+    println("=================================")
+
+    // 5) Confirmação da operação
+    while (true) {
+        print("\nDeseja confirmar a operação? (S/N): ")
+        val resposta = input.nextLine()
+
+        if (resposta.equals("S", ignoreCase = true)) {
+            println("\nAção registrada com sucesso.")
+            println("Retornando à tela de selecionar serviço...\n")
+            return
+        } else if (resposta.equals("N", ignoreCase = true)) {
+            println("\nOperação cancelada.")
+            println("Retornando à tela de selecionar serviço...\n")
+            return
+        } else {
+            println("Dado incorreto, tente novamente (digite S ou N).")
+        }
+    }
+}
+
+// ----------------------
+// Selecionar veículo
+// ----------------------
+fun selecionarVeiculoPorPrefixo(input: Scanner): Veiculo {
+    while (true) {
+        println("\nPrefixos disponíveis:")
+        veiculos.forEach { v ->
+            println("- ${v.prefixo} (${v.modelo})")
+        }
+
+        print("\nDigite o prefixo do veículo: ")
+        val prefixoDigitado = input.nextLine()
+
+        val veiculo = veiculos.firstOrNull { it.prefixo == prefixoDigitado }
+
+        if (veiculo != null) {
+            return veiculo
+        } else {
+            println("\nDado incorreto, tente novamente. Prefixo não encontrado.\n")
+        }
+    }
+}
+
+// ----------------------
+// Selecionar peça
+// ----------------------
+fun selecionarPecaParaTroca(input: Scanner): Peca {
+    while (true) {
+        println("Selecione a peça que será trocada:")
+
+        pecas.forEachIndexed { index, peca ->
+            println("${index + 1} - ${peca.nome} (estoque: ${peca.quantidade})")
+        }
+
+        print("Opção: ")
+        val opcaoPeca = input.nextLine()
+        val indice = opcaoPeca.toIntOrNull()
+
+        if (indice == null || indice !in 1..pecas.size) {
+            println("\nDado incorreto, tente novamente.\n")
+            continue
+        }
+
+        val peca = pecas[indice - 1]
+
+        if (peca.quantidade <= 0) {
+            println("\nPeça sem estoque. Operação cancelada.\n")
+            return peca
+        }
+
+        // Diminui uma unidade do estoque
+        peca.quantidade -= 1
+        println("\nEstoque atualizado da peça ${peca.nome}: ${peca.quantidade} unidade(s) restante(s).")
+
+        return peca
+    }
+}
